@@ -5,6 +5,7 @@ const util = require('util');
 const async = require('async');
 const _ = require('lodash');
 
+const readFolderRecursive = require('./utils/readFolderRecursive');
 const cql = Promise.promisifyAll(require('dse-driver'));
 const ORM = Promise.promisifyAll(require('./orm/apollo'));
 const debug = require('debug')('express-cassandra');
@@ -32,14 +33,13 @@ CassandraClient.bind = (options, cb) => {
       return;
     }
 
-    fs.readdir(self.directory, (err1, list) => {
+    readFolderRecursive(self.directory, (err1, list) => {
       if (err1) {
         if (cb) cb(err1);
         return;
       }
 
-      async.each(list, (file, callback) => {
-        const fileName = util.format('%s/%s', self.directory, file);
+      async.each(list, (fileName, callback) => {
         const validFileExtensions = [
           'js', 'javascript', 'jsx', 'coffee', 'coffeescript', 'iced',
           'script', 'ts', 'tsx', 'typescript', 'cjsx', 'co', 'json',
